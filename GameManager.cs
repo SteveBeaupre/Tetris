@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Storage;
 using Microsoft.Xna.Framework.GamerServices;
@@ -13,7 +14,6 @@ using Tetris;
 
 namespace Tetris
 {
-
     interface IGameManager
     {
         void Reset();
@@ -30,13 +30,16 @@ namespace Tetris
         
         CellsGrid Grid;
         BaseTetrisShape CurrentShape;
-        Gravity GameGravity;
+        Gravity gravity;
+
+        public SoundManager soundManager;
 
         public GameManager(int ScreenWidth, int ScreenHeight)
         {
+            soundManager = new SoundManager();
             Grid = new CellsGrid(ScreenWidth, ScreenHeight);
             KbInputs = new KeyboardInputs();
-            GameGravity = new Gravity();
+            gravity = new Gravity();
 
             Reset();
         }
@@ -45,22 +48,24 @@ namespace Tetris
         {
             Grid.Reset();
             //Grid.CreateDebugPattern();
-            GameGravity.Reset();
+            gravity.Reset();
             SpawnRandomShape((int)Shapes.I);
             //GameGravity.Enabled = false;
         }
 
         public void SpawnRandomShape(int i = -1)
         {
+            int NumShapes = Shapes.GetNames(typeof(Shapes)).Length;
+
             int r;
             if (i < 0)
             {
                 Random random = new Random();
-                r = random.Next(0, 7);
+                r = random.Next(0, NumShapes);
             }
             else 
             {
-                r = i > 7 ? 7 : i;
+                r = i > NumShapes ? NumShapes : i;
             }
             
             switch(r)
@@ -77,12 +82,12 @@ namespace Tetris
 
         public void UpdateInputs()
         {
-            KbInputs.ProcessInputs(this, ref Grid, ref CurrentShape, ref GameGravity);
+            KbInputs.ProcessInputs(this, ref Grid, ref CurrentShape, ref gravity);
         }
 
         public void UpdateGravity(GameTime gameTime)
         {
-            GameGravity.Update(this, ref gameTime, ref Grid, ref CurrentShape);
+            gravity.Update(this, ref gameTime, ref Grid, ref CurrentShape);
         }
 
         public void Draw(SpriteBatch spriteBatch, Texture2D Block, Texture2D Background)

@@ -71,7 +71,8 @@ namespace Tetris
 
             if (ElapsedTime > BlocksFallSpeed)
             {
-                ElapsedTime -= BlocksFallSpeed;
+                while (ElapsedTime > BlocksFallSpeed)
+                    ElapsedTime -= BlocksFallSpeed;
 
                 // Can we move the shape down?
                 if (CurrentShape.CanMove(Grid, MoveDirection.MoveDown))
@@ -87,9 +88,9 @@ namespace Tetris
 
                     // Create a new shape
                     gm.SpawnRandomShape();
-
                     // Reset the block falling speed
                     BlocksFallSpeed = TimeSpan.FromMilliseconds(1000);
+                    gm.soundManager.Play(TetrisSoundsFX.StickSound);
                 }
             }
         }

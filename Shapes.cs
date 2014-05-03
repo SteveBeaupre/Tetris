@@ -56,23 +56,14 @@ namespace Tetris
             InitialTranslationMatrix = new TetrisMatrix();
         }
 
-        /*public int GetNumShapes()
-        {
-            return NumShapesType;
-        }
-
-        public int GetNumBlockPerShapes()
-        {
-            return NumBlockPerShapes;
-        }*/
-
         public bool IsCellPositionValid(CellsGrid Grid, CellsGrid.CellData Cell, int x, int y)
         {
-            return Grid.IsCellCoordValid(x, y) && !Cell.IsCellFilled;
+            return Grid.IsBlockCoordValid(x, y) && !Cell.IsCellFilled;
         }
 
         private TetrisMatrix GetMultipliedMatrix(bool MultiplyRotationMatrix = true)
         {
+            // This return the real block location, with or without rotation 
             TetrisMatrix mat = InitialBlockPosition;
             mat += InitialTranslationMatrix;
             mat += ShapePositionMatrix;
@@ -100,27 +91,30 @@ namespace Tetris
             return (ShapeOrientation)i;
         }
 
-        public void Rotate(CellsGrid Grid, RotateDirection Dir) 
+        public bool Rotate(CellsGrid Grid, RotateDirection Dir) 
         {
-            if (CanRotate(Grid, Dir)) {
+            if (!CanRotate(Grid, Dir))
+                return false;
 
-                // Change the orientation flag and convert it to an int
-                ShapeOrientation = ChangeOrientation(Dir);
-                int i = (int)ShapeOrientation;
 
-                // Set matrix to last matrix
-                TetrisMatrix RotMatrix = new TetrisMatrix();
-                RotMatrix = RotationMatrix[i];
+            // Change the orientation flag and convert it to an int
+            ShapeOrientation = ChangeOrientation(Dir);
+            int i = (int)ShapeOrientation;
 
-                // Add previous matrix, if any (only affect the two last matrix)
-                while (i > 0) {
-                    RotMatrix += RotationMatrix[i - 1];
-                    i--;
-                } 
+            // Set matrix to last matrix
+            TetrisMatrix RotMatrix = new TetrisMatrix();
+            RotMatrix = RotationMatrix[i];
+
+            // Add previous matrix, if any (only affect the two last matrix)
+            while (i > 0) {
+                RotMatrix += RotationMatrix[i - 1];
+                i--;
+            } 
                 
-                // Update the shape rotation matrix
-                ShapeRotationMatrix = RotMatrix;
-           }
+            // Update the shape rotation matrix
+            ShapeRotationMatrix = RotMatrix;
+
+            return true;
         }
 
         public bool CanRotate(CellsGrid Grid, RotateDirection Dir) 
@@ -143,7 +137,7 @@ namespace Tetris
             // Get the current blocks position matrix
             TetrisMatrix BlockPos = GetMultipliedMatrix(false);
 
-            // 
+            // Add the temp. rotation matrix to the block position
             BlockPos += RotMatrix;
 
             // For each block
@@ -163,14 +157,16 @@ namespace Tetris
             return true;
         }
 
-        public void Move(CellsGrid Grid, MoveDirection Dir)
+        public bool Move(CellsGrid Grid, MoveDirection Dir)
         {
-            if (CanMove(Grid, Dir))
-            {
-                int d = (int)Dir;
-                // Update the shape position matrix
-                ShapePositionMatrix += TranslationMatrix.Mat[d];
-            }
+            if (!CanMove(Grid, Dir))
+                return false;
+
+            int d = (int)Dir;
+            // Update the shape position matrix
+            ShapePositionMatrix += TranslationMatrix.Mat[d];
+
+            return true;
         }
 
         public bool CanMove(CellsGrid Grid, MoveDirection Dir)

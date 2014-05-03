@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Storage;
 using Microsoft.Xna.Framework.GamerServices;
@@ -40,25 +41,35 @@ namespace Tetris
 
             if (k == InputKey.LeftKey)
             {
-                CurrentShape.Move(Grid, MoveDirection.MoveLeft);
+                if (CurrentShape.Move(Grid, MoveDirection.MoveLeft)) {
+                    gm.soundManager.Play(TetrisSoundsFX.MoveSound);
+                }
             }
             if (k == InputKey.RightKey)
             {
-                CurrentShape.Move(Grid, MoveDirection.MoveRight);
+                if (CurrentShape.Move(Grid, MoveDirection.MoveRight)) {
+                    gm.soundManager.Play(TetrisSoundsFX.MoveSound);
+                }
             }
 
             if (k == InputKey.RotateClockwise)
             {
-                CurrentShape.Rotate(Grid, RotateDirection.Clockwise);
+                if (CurrentShape.Rotate(Grid, RotateDirection.Clockwise)){
+                    gm.soundManager.Play(TetrisSoundsFX.MoveSound);
+                }
             }
             if (k == InputKey.RotateCounterClockwise)
             {
-                CurrentShape.Rotate(Grid, RotateDirection.CounterClockwise);
+                if (CurrentShape.Rotate(Grid, RotateDirection.CounterClockwise)) {
+                    gm.soundManager.Play(TetrisSoundsFX.MoveSound);
+                }
             }
 
             if (k == InputKey.FallKey)
             {
-                GameGravity.SetBlockFallingSpeed(TimeSpan.FromMilliseconds(50));
+                int delay = 50;
+                GameGravity.SetBlockFallingSpeed(TimeSpan.FromMilliseconds(delay));
+                GameGravity.SetElapsedTime(TimeSpan.FromMilliseconds(delay));
             }
 
             if (k == InputKey.ResetKey)

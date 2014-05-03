@@ -93,6 +93,9 @@ namespace Tetris
                     Cells[y, x].IsCellFilled = IsFilled;
                 }
             }
+            Cells[14, 3].IsCellFilled = false;
+            Cells[10, 2].IsCellFilled = false;
+            Cells[12, 4].IsCellFilled = false;
         }
 
         // Calculate the grid size

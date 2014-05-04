@@ -18,7 +18,7 @@ namespace Tetris
     {
         void Reset();
 
-        void UpdateInputs();
+        void UpdateInputs(GameTime gameTime);
         void UpdateGravity(GameTime gameTime);
 
         void Draw(SpriteBatch spriteBatch, Texture2D Block, Texture2D Background);
@@ -28,9 +28,10 @@ namespace Tetris
     {
         KeyboardInputs KbInputs;
         
-        CellsGrid Grid;
-        BaseTetrisShape CurrentShape;
-        Gravity gravity;
+        public CellsGrid Grid;
+        public BaseTetrisShape CurrentShape;
+        public Gravity gravity;
+        public TimeSpan ElapsedTime;
 
         public SoundManager soundManager;
 
@@ -51,6 +52,7 @@ namespace Tetris
             gravity.Reset();
             SpawnRandomShape((int)Shapes.I);
             //GameGravity.Enabled = false;
+            ElapsedTime = TimeSpan.Zero;
         }
 
         public void SpawnRandomShape(int i = -1)
@@ -80,14 +82,14 @@ namespace Tetris
             }
         }
 
-        public void UpdateInputs()
+        public void UpdateInputs(GameTime gameTime)
         {
-            KbInputs.ProcessInputs(this, ref Grid, ref CurrentShape, ref gravity);
+            KbInputs.ProcessInputs(this, ref gameTime);
         }
 
         public void UpdateGravity(GameTime gameTime)
         {
-            gravity.Update(this, ref gameTime, ref Grid, ref CurrentShape);
+            gravity.Update(this, ref gameTime);
         }
 
         public void Draw(SpriteBatch spriteBatch, Texture2D Block, Texture2D Background)

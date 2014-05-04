@@ -13,7 +13,7 @@ namespace Tetris
 {
     class Gravity
     {
-        private TimeSpan ElapsedTime;
+        public  TimeSpan GravityTimer;
         private TimeSpan BlocksFallSpeed;
         private TimeSpan ClearRowSpeed;
 
@@ -27,7 +27,7 @@ namespace Tetris
 
         public void Reset()
         {
-            ElapsedTime = TimeSpan.Zero;
+            GravityTimer = TimeSpan.Zero;
             BlocksFallSpeed = TimeSpan.FromMilliseconds(1000);
             ClearRowSpeed = TimeSpan.FromMilliseconds(200);
         }
@@ -42,49 +42,29 @@ namespace Tetris
             BlocksFallSpeed = Speed;
         }
 
-        public TimeSpan GetElapsedTime()
-        {
-            return ElapsedTime;
-        }
-
-        public void ResetElapsedTime(TimeSpan Elapsed)
-        {
-            ElapsedTime = TimeSpan.Zero;
-        }
-
-        public void SetElapsedTime(TimeSpan Elapsed)
-        {
-            ElapsedTime = Elapsed;
-        }
-
-        public void IncElapsedTime(TimeSpan Elapsed)
-        {
-            ElapsedTime += Elapsed;
-        }
-
-        public void Update(GameManager gm, ref GameTime gameTime, ref CellsGrid Grid, ref BaseTetrisShape CurrentShape)
+        public void Update(GameManager gm, ref GameTime gameTime)
         {
             if (!Enabled)
                 return;
 
-            ElapsedTime += gameTime.ElapsedGameTime;
+            GravityTimer += gameTime.ElapsedGameTime;
 
-            if (ElapsedTime > BlocksFallSpeed)
+            if (GravityTimer > BlocksFallSpeed)
             {
-                while (ElapsedTime > BlocksFallSpeed)
-                    ElapsedTime -= BlocksFallSpeed;
+                while (GravityTimer > BlocksFallSpeed)
+                    GravityTimer -= BlocksFallSpeed;
 
                 // Can we move the shape down?
-                if (CurrentShape.CanMove(Grid, MoveDirection.MoveDown))
+                if (gm.CurrentShape.CanMove(gm.Grid, MoveDirection.MoveDown))
                 {
                     // Move it down 
-                    CurrentShape.Move(Grid, MoveDirection.MoveDown);
+                    gm.CurrentShape.Move(gm.Grid, MoveDirection.MoveDown);
                 }
                 else
                 {
                     // We can't move it down further, so add it to the static array 
-                    Grid.AddShapeToCellsArray(CurrentShape);
-                    Grid.ClearLines(CurrentShape);
+                    gm.Grid.AddShapeToCellsArray(gm.CurrentShape);
+                    gm.Grid.ClearLines(gm.CurrentShape);
 
                     // Create a new shape
                     gm.SpawnRandomShape();

@@ -19,48 +19,77 @@ namespace Tetris
 
     interface IKeyboardInputs
     {
-        void ProcessInputs(GameManager gm, ref CellsGrid Grid, ref BaseTetrisShape CurrentShape, ref Gravity GameGravity);
+        void ProcessInputs(GameManager gm, ref GameTime gameTime);
     }
 
     class KeyboardInputs : IKeyboardInputs
     {
+        private const int InitialDelay = 500;
+        private const int SmallDelays = 150;
+
+        private TimeSpan[] LastTimeKeyWasPressed;
+        private TimeSpan[] RepetitionDelay;
+
         private KeyboardState newKbState, oldKbState;
 
-        public void OnKeyDown(GameManager gm, CellsGrid Grid, BaseTetrisShape CurrentShape, Gravity GameGravity, InputKey k)
+        public KeyboardInputs()
         {
-            if (!GameGravity.Enabled) {
+            int NumElements = InputKey.GetNames(typeof(InputKey)).Length;
+            
+            LastTimeKeyWasPressed = new TimeSpan[NumElements];
+            RepetitionDelay = new TimeSpan[NumElements];
+            for (int i = 0; i < NumElements; i++) {
+                RepetitionDelay[i] = TimeSpan.Zero;
+                LastTimeKeyWasPressed[i] = TimeSpan.Zero;
+            }
+        }
+
+        public void OnKeyDown(GameManager gm, GameTime gameTime, InputKey k)
+        {
+            int i = (int)k;
+            RepetitionDelay[i] = TimeSpan.FromMilliseconds(InitialDelay);
+            LastTimeKeyWasPressed[i] = TimeSpan.Zero;
+
+            if (!gm.gravity.Enabled)
+            {
                 if (k == InputKey.DebugMoveUpKey)
                 {
-                    CurrentShape.Move(Grid, MoveDirection.MoveUp);
+                    gm.CurrentShape.Move(gm.Grid, MoveDirection.MoveUp);
                 }
                 if (k == InputKey.DebugMoveDownKey)
                 {
-                    CurrentShape.Move(Grid, MoveDirection.MoveDown);
+                    gm.CurrentShape.Move(gm.Grid, MoveDirection.MoveDown);
                 }
             }
 
             if (k == InputKey.LeftKey)
             {
-                if (CurrentShape.Move(Grid, MoveDirection.MoveLeft)) {
+                if (gm.CurrentShape.Move(gm.Grid, MoveDirection.MoveLeft))
+                {
                     gm.soundManager.Play(TetrisSoundsFX.MoveSound);
+
                 }
             }
             if (k == InputKey.RightKey)
             {
-                if (CurrentShape.Move(Grid, MoveDirection.MoveRight)) {
+                if (gm.CurrentShape.Move(gm.Grid, MoveDirection.MoveRight))
+                {
                     gm.soundManager.Play(TetrisSoundsFX.MoveSound);
+
                 }
             }
 
             if (k == InputKey.RotateClockwise)
             {
-                if (CurrentShape.Rotate(Grid, RotateDirection.Clockwise)){
+                if (gm.CurrentShape.Rotate(gm.Grid, RotateDirection.Clockwise))
+                {
                     gm.soundManager.Play(TetrisSoundsFX.MoveSound);
                 }
             }
             if (k == InputKey.RotateCounterClockwise)
             {
-                if (CurrentShape.Rotate(Grid, RotateDirection.CounterClockwise)) {
+                if (gm.CurrentShape.Rotate(gm.Grid, RotateDirection.CounterClockwise))
+                {
                     gm.soundManager.Play(TetrisSoundsFX.MoveSound);
                 }
             }
@@ -68,8 +97,8 @@ namespace Tetris
             if (k == InputKey.FallKey)
             {
                 int delay = 50;
-                GameGravity.SetBlockFallingSpeed(TimeSpan.FromMilliseconds(delay));
-                GameGravity.SetElapsedTime(TimeSpan.FromMilliseconds(delay));
+                gm.gravity.SetBlockFallingSpeed(TimeSpan.FromMilliseconds(delay));
+                gm.gravity.GravityTimer = TimeSpan.FromMilliseconds(delay);
             }
 
             if (k == InputKey.ResetKey)
@@ -78,43 +107,79 @@ namespace Tetris
             }
 
             if (k == InputKey.TurnOffGravityKey) {
-                GameGravity.Enabled = !GameGravity.Enabled;
+                gm.gravity.Enabled = !gm.gravity.Enabled;
             }
         }
 
-        public void OnKeyUp(GameManager gm, CellsGrid Grid, BaseTetrisShape CurrentShape, Gravity GameGravity, InputKey k)
+        public void OnKeyUp(GameManager gm, GameTime gameTime, InputKey k)
         { 
             if (k == InputKey.FallKey)
             {
-                GameGravity.SetBlockFallingSpeed(TimeSpan.FromMilliseconds(1000));
+                gm.gravity.SetBlockFallingSpeed(TimeSpan.FromMilliseconds(1000));
             }
-
         }
 
-        public void ProcessKey(GameManager gm, CellsGrid Grid, BaseTetrisShape CurrentShape, Gravity GameGravity, Keys k)
+        public void OnKeyPressed(GameManager gm, GameTime gameTime, InputKey k)
+        {
+            if (k == InputKey.LeftKey || k == InputKey.RightKey)
+            {
+                int i = (int)k;
+                LastTimeKeyWasPressed[i] += gameTime.ElapsedGameTime;
+                while (LastTimeKeyWasPressed[i] > RepetitionDelay[i])
+                {
+                    LastTimeKeyWasPressed[i] -= RepetitionDelay[i];
+                    RepetitionDelay[i] = TimeSpan.FromMilliseconds(SmallDelays);
+
+                    if (gm.CurrentShape.Move(gm.Grid, k == InputKey.LeftKey ? MoveDirection.MoveLeft : MoveDirection.MoveRight))
+                    {
+                        gm.soundManager.Play(TetrisSoundsFX.MoveSound);
+                    }
+                }
+            }
+
+            if (k == InputKey.RotateClockwise || k == InputKey.RotateCounterClockwise)
+            {
+                int i = (int)k;
+                LastTimeKeyWasPressed[i] += gameTime.ElapsedGameTime;
+                while (LastTimeKeyWasPressed[i] > RepetitionDelay[i])
+                {
+                    LastTimeKeyWasPressed[i] -= RepetitionDelay[i];
+                    RepetitionDelay[i] = TimeSpan.FromMilliseconds(SmallDelays);
+
+                    if (gm.CurrentShape.Rotate(gm.Grid, k == InputKey.RotateClockwise ? RotateDirection.Clockwise : RotateDirection.CounterClockwise))
+                    {
+                        gm.soundManager.Play(TetrisSoundsFX.MoveSound);
+                    }
+                }
+            }
+        }
+
+        public void ProcessKey(GameManager gm, GameTime gameTime, Keys k)
         {
             InputKey ik = KeysToInputKey(k);
 
             if (this.IsKeyPressed(k))
-                OnKeyDown(gm, Grid, CurrentShape, GameGravity, ik);
+                OnKeyDown(gm, gameTime, ik);
             if (this.IsKeyReleased(k))
-                OnKeyUp(gm, Grid, CurrentShape, GameGravity, ik);
+                OnKeyUp(gm, gameTime, ik);
+            if((oldKbState.IsKeyDown(k) && newKbState.IsKeyDown(k)))
+                OnKeyPressed(gm, gameTime, ik);
         }
 
-        public void ProcessInputs(GameManager gm, ref CellsGrid Grid, ref BaseTetrisShape CurrentShape, ref Gravity GameGravity)
+        public void ProcessInputs(GameManager gm, ref GameTime gameTime)
         {
             newKbState = Keyboard.GetState();
 
-            ProcessKey(gm, Grid, CurrentShape, GameGravity, Keys.Up);
-            ProcessKey(gm, Grid, CurrentShape, GameGravity, Keys.Down);
-            ProcessKey(gm, Grid, CurrentShape, GameGravity, Keys.Left);
-            ProcessKey(gm, Grid, CurrentShape, GameGravity, Keys.Right);
-            ProcessKey(gm, Grid, CurrentShape, GameGravity, Keys.Space);
-            ProcessKey(gm, Grid, CurrentShape, GameGravity, Keys.NumPad3);
-            ProcessKey(gm, Grid, CurrentShape, GameGravity, Keys.NumPad1);
-            ProcessKey(gm, Grid, CurrentShape, GameGravity, Keys.P);
-            ProcessKey(gm, Grid, CurrentShape, GameGravity, Keys.G);
-            ProcessKey(gm, Grid, CurrentShape, GameGravity, Keys.R);
+            ProcessKey(gm, gameTime, Keys.Up);
+            ProcessKey(gm, gameTime, Keys.Down);
+            ProcessKey(gm, gameTime, Keys.Left);
+            ProcessKey(gm, gameTime, Keys.Right);
+            ProcessKey(gm, gameTime, Keys.Space);
+            ProcessKey(gm, gameTime, Keys.NumPad3);
+            ProcessKey(gm, gameTime, Keys.NumPad1);
+            ProcessKey(gm, gameTime, Keys.P);
+            ProcessKey(gm, gameTime, Keys.G);
+            ProcessKey(gm, gameTime, Keys.R);
 
             oldKbState = newKbState;
         }
@@ -123,8 +188,8 @@ namespace Tetris
         {
             switch (k)
             {
-                case Keys.Down: return InputKey.DebugMoveDownKey;
                 case Keys.Up: return InputKey.DebugMoveUpKey;
+                case Keys.Down: return InputKey.DebugMoveDownKey;
                 case Keys.Left: return InputKey.LeftKey;
                 case Keys.Right: return InputKey.RightKey;
                 case Keys.Space: return InputKey.FallKey;

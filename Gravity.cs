@@ -97,6 +97,10 @@ namespace Tetris
                         GravitySpeed = TimeSpan.FromMilliseconds(1000);
                         gm.SetGameState(GameStates.Playing);
                     }
+                    else
+                    {
+                        gm.soundManager.Play(TetrisSoundsFX.StickSound);
+                    }
                 }
             }
         }
@@ -117,6 +121,12 @@ namespace Tetris
                     break;
                 }
             }
+        }
+
+        public void DoStickyGravity(GameManager gm)
+        {
+
+        
         }
 
         public TimeSpan GetGravitySpeed()

@@ -83,11 +83,12 @@ namespace Tetris
 
         public void CreateDebugPattern()
         {
-            FillRow(NumCellsOnYAxis - 1, 0, 2);
+            FillRow(NumCellsOnYAxis - 1, 0, 3);
             FillRow(NumCellsOnYAxis - 1, 5, NumCellsOnXAxis - 1);
 
-            FillRow(NumCellsOnYAxis - 2, 0, 2);
+            FillRow(NumCellsOnYAxis - 2, 0, 3);
             FillRow(NumCellsOnYAxis - 2, 5, NumCellsOnXAxis - 1);
+            Cells[NumCellsOnYAxis - 2, 0].IsCellFilled = false;
 
             FillRow(NumCellsOnYAxis - 3, 0, 2);
             FillRow(NumCellsOnYAxis - 3, 5, NumCellsOnXAxis - 1);

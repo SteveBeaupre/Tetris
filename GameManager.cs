@@ -61,7 +61,7 @@ namespace Tetris
             playField.Reset();
             playField.CreateDebugPattern();
             gravity.Reset();
-            SpawnRandomShape((int)Shapes.O);
+            SpawnRandomShape((int)Shapes.L);
             //GameGravity.Enabled = false;
             ElapsedTime = TimeSpan.Zero;
             gameState = GameStates.Playing;

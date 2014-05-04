@@ -115,7 +115,7 @@ namespace Tetris
         { 
             if (k == InputKey.FallKey)
             {
-                gm.gravity.Reset();
+                gm.gravity.SetGravitySpeed(TimeSpan.FromMilliseconds(1000));
             }
         }
 

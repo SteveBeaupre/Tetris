@@ -93,8 +93,7 @@ namespace Tetris
                 Exit();
 
             // TODO: Add your update logic here
-            gm.UpdateInputs(gameTime);
-            gm.UpdateGravity(gameTime);
+            gm.Update(gameTime);
 
             base.Update(gameTime);
         }

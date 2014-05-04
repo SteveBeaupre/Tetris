@@ -17,10 +17,7 @@ namespace Tetris
     interface IGameManager
     {
         void Reset();
-
-        void UpdateInputs(GameTime gameTime);
-        void UpdateGravity(GameTime gameTime);
-
+        void Update(GameTime gameTime);
         void Draw(SpriteBatch spriteBatch, Texture2D Block, Texture2D Background);
     }
 
@@ -82,13 +79,9 @@ namespace Tetris
             }
         }
 
-        public void UpdateInputs(GameTime gameTime)
+        public void Update(GameTime gameTime)
         {
             KbInputs.ProcessInputs(this, ref gameTime);
-        }
-
-        public void UpdateGravity(GameTime gameTime)
-        {
             gravity.Update(this, ref gameTime);
         }
 

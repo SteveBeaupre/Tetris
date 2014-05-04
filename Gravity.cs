@@ -14,10 +14,11 @@ namespace Tetris
     class Gravity
     {
         public  TimeSpan GravityTimer;
-        private TimeSpan BlocksFallSpeed;
-        private TimeSpan ClearRowSpeed;
+        private TimeSpan GravitySpeed;
 
         public bool Enabled;
+
+        private bool[] LinesCleared;
 
         public Gravity()
         {
@@ -27,19 +28,9 @@ namespace Tetris
 
         public void Reset()
         {
+            LinesCleared = new bool[PlayField.NumCellsOnYAxis];
             GravityTimer = TimeSpan.Zero;
-            BlocksFallSpeed = TimeSpan.FromMilliseconds(1000);
-            ClearRowSpeed = TimeSpan.FromMilliseconds(200);
-        }
-
-        public TimeSpan GetBlockFallingSpeed()
-        {
-            return BlocksFallSpeed;
-        }
-
-        public void SetBlockFallingSpeed(TimeSpan Speed)
-        {
-            BlocksFallSpeed = Speed;
+            SetGravitySpeed(TimeSpan.FromMilliseconds(1000));
         }
 
         public void Update(GameManager gm, ref GameTime gameTime)
@@ -49,30 +40,94 @@ namespace Tetris
 
             GravityTimer += gameTime.ElapsedGameTime;
 
-            if (GravityTimer > BlocksFallSpeed)
+            if (GravityTimer > GravitySpeed)
             {
-                while (GravityTimer > BlocksFallSpeed)
-                    GravityTimer -= BlocksFallSpeed;
+                while (GravityTimer > GravitySpeed)
+                    GravityTimer -= GravitySpeed;
 
-                // Can we move the shape down?
-                if (gm.CurrentShape.CanMove(gm.Grid, MoveDirection.MoveDown))
+                if (gm.GetGameState() == GameStates.Playing)
                 {
-                    // Move it down 
-                    gm.CurrentShape.Move(gm.Grid, MoveDirection.MoveDown);
+                    // Can we move the shape down?
+                    if (gm.CurrentShape.CanMove(gm.playField, MoveDirection.MoveDown))
+                    {
+                        // Move it down 
+                        gm.CurrentShape.Move(gm.playField, MoveDirection.MoveDown);
+                    }
+                    else
+                    {
+                        // Reset the block falling speed
+                        gm.soundManager.Play(TetrisSoundsFX.StickSound);
+
+                        // We can't move it down further, so add it to the static array 
+                        gm.playField.AddShapeToCellsArray(gm.CurrentShape);
+                        gm.CurrentShape.Hide();
+
+                        // Clear the lines
+
+                        if (gm.playField.ClearLines(ref LinesCleared))
+                        {
+                            // We have some lines to clear...
+                            GravitySpeed = TimeSpan.FromMilliseconds(250);
+                            gm.SetGameState(GameStates.Clearing);
+                        }
+                        else 
+                        {
+                            // Nothing to clear
+                            gm.SpawnRandomShape();
+                            GravitySpeed = TimeSpan.FromMilliseconds(1000);
+                        }
+                    }
                 }
-                else
+                else if (gm.GetGameState() == GameStates.Clearing)
                 {
-                    // We can't move it down further, so add it to the static array 
-                    gm.Grid.AddShapeToCellsArray(gm.CurrentShape);
-                    gm.Grid.ClearLines(gm.CurrentShape);
+                    DoNaiveGravity(gm);
 
-                    // Create a new shape
-                    gm.SpawnRandomShape();
-                    // Reset the block falling speed
-                    BlocksFallSpeed = TimeSpan.FromMilliseconds(1000);
-                    gm.soundManager.Play(TetrisSoundsFX.StickSound);
+                    int NumLinesToClearLeft = 0;
+                    for (int y = 0; y < PlayField.NumCellsOnYAxis; y++)
+                    {
+                        if (LinesCleared[y])
+                        {
+                            NumLinesToClearLeft++;
+                        }
+                    }
+
+                    if (NumLinesToClearLeft == 0)
+                    {
+                        gm.SpawnRandomShape();
+                        GravitySpeed = TimeSpan.FromMilliseconds(1000);
+                        gm.SetGameState(GameStates.Playing);
+                    }
                 }
             }
         }
+
+        public void DoNaiveGravity(GameManager gm)
+        {
+            // move each row above the first cleared one by one
+            for (int y = PlayField.NumCellsOnYAxis - 1; y >= 0; y--)
+            {
+                if (LinesCleared[y])
+                {
+                    gm.playField.MoveRowsDown(y - 1);
+
+                    LinesCleared[y] = false;
+                    for (int z = y; z > 0; z--)
+                        LinesCleared[z] = LinesCleared[z - 1];
+
+                    break;
+                }
+            }
+        }
+
+        public TimeSpan GetGravitySpeed()
+        {
+            return GravitySpeed;
+        }
+
+        public void SetGravitySpeed(TimeSpan Speed)
+        {
+            GravitySpeed = Speed;
+        }
+
     }
 }

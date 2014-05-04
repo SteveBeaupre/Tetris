@@ -35,7 +35,7 @@
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Cells.cs" />
+    <Compile Include="PlayField.cs" />
     <Compile Include="GameManager.cs" />
     <Compile Include="KeyboardInputs.cs" />
     <Compile Include="Gravity.cs" />

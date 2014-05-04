@@ -14,6 +14,8 @@ using Tetris;
 
 namespace Tetris
 {
+    enum GameStates { Playing, Paused, Clearing, GameOver};
+
     interface IGameManager
     {
         void Reset();
@@ -23,9 +25,11 @@ namespace Tetris
 
     class GameManager : IGameManager
     {
+        GameStates gameState;
+
         KeyboardInputs KbInputs;
-        
-        public CellsGrid Grid;
+
+        public PlayField playField;
         public BaseTetrisShape CurrentShape;
         public Gravity gravity;
         public TimeSpan ElapsedTime;
@@ -35,21 +39,32 @@ namespace Tetris
         public GameManager(int ScreenWidth, int ScreenHeight)
         {
             soundManager = new SoundManager();
-            Grid = new CellsGrid(ScreenWidth, ScreenHeight);
+            playField = new PlayField(ScreenWidth, ScreenHeight);
             KbInputs = new KeyboardInputs();
             gravity = new Gravity();
 
             Reset();
         }
 
+        public GameStates GetGameState()
+        {
+            return gameState;
+        }
+
+        public void SetGameState(GameStates state)
+        {
+            gameState = state;
+        }
+
         public void Reset()
         {
-            Grid.Reset();
-            //Grid.CreateDebugPattern();
+            playField.Reset();
+            playField.CreateDebugPattern();
             gravity.Reset();
-            SpawnRandomShape((int)Shapes.I);
+            SpawnRandomShape((int)Shapes.O);
             //GameGravity.Enabled = false;
             ElapsedTime = TimeSpan.Zero;
+            gameState = GameStates.Playing;
         }
 
         public void SpawnRandomShape(int i = -1)
@@ -77,6 +92,8 @@ namespace Tetris
                 case (int)Shapes.T: CurrentShape = new Shape_T(); break;
                 case (int)Shapes.Z: CurrentShape = new Shape_Z(); break;
             }
+            
+            CurrentShape.Show();
         }
 
         public void Update(GameTime gameTime)
@@ -91,8 +108,8 @@ namespace Tetris
             
             spriteBatch.Draw(Background, new Vector2(0, 0), Color.White);
 
-            Grid.Draw(spriteBatch, Block);
-            CurrentShape.Draw(spriteBatch, Block, Grid);
+            playField.Draw(spriteBatch, Block);
+            CurrentShape.Draw(spriteBatch, Block, playField);
 
             spriteBatch.End();
 

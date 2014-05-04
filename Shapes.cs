@@ -19,6 +19,8 @@ namespace Tetris
         //public const int NumShapesType = 7;
         public const int NumBlockPerShapes = 4;
 
+        private bool Visible;
+
         public Shapes ShapeType;
         public Color ShapeColor;
 
@@ -56,9 +58,19 @@ namespace Tetris
             InitialTranslationMatrix = new TetrisMatrix();
         }
 
-        public bool IsCellPositionValid(CellsGrid Grid, CellsGrid.CellData Cell, int x, int y)
+        public void Show()
         {
-            return Grid.IsBlockCoordValid(x, y) && !Cell.IsCellFilled;
+            Visible = true;
+        }
+
+        public void Hide()
+        {
+            Visible = false;
+        }
+
+        public bool IsCellPositionValid(PlayField playField, PlayField.CellData Cell, int x, int y)
+        {
+            return playField.IsBlockCoordValid(x, y) && !Cell.IsCellFilled;
         }
 
         private TetrisMatrix GetMultipliedMatrix(bool MultiplyRotationMatrix = true)
@@ -91,9 +103,9 @@ namespace Tetris
             return (ShapeOrientation)i;
         }
 
-        public bool Rotate(CellsGrid Grid, RotateDirection Dir) 
+        public bool Rotate(PlayField playField, RotateDirection Dir) 
         {
-            if (!CanRotate(Grid, Dir))
+            if (!CanRotate(playField, Dir))
                 return false;
 
 
@@ -117,7 +129,7 @@ namespace Tetris
             return true;
         }
 
-        public bool CanRotate(CellsGrid Grid, RotateDirection Dir) 
+        public bool CanRotate(PlayField playField, RotateDirection Dir) 
         {
             // Change the orientation flag and convert it to an int
             ShapeOrientation TmpShapeOrientation = ChangeOrientation(Dir);
@@ -148,7 +160,7 @@ namespace Tetris
                 int y = BlockPos.Mat[i].y;
 
                 // return false if one of the position is invalid
-                if (!IsCellPositionValid(Grid, Grid.GetCell(x, y), x, y))
+                if (!IsCellPositionValid(playField, playField.GetCell(x, y), x, y))
                     return false;
             }
 
@@ -157,9 +169,9 @@ namespace Tetris
             return true;
         }
 
-        public bool Move(CellsGrid Grid, MoveDirection Dir)
+        public bool Move(PlayField playField, MoveDirection Dir)
         {
-            if (!CanMove(Grid, Dir))
+            if (!CanMove(playField, Dir))
                 return false;
 
             int d = (int)Dir;
@@ -169,7 +181,7 @@ namespace Tetris
             return true;
         }
 
-        public bool CanMove(CellsGrid Grid, MoveDirection Dir)
+        public bool CanMove(PlayField playField, MoveDirection Dir)
         {
             // Get the current blocks position matrix
             TetrisMatrix BlockPos = GetMultipliedMatrix();
@@ -187,7 +199,7 @@ namespace Tetris
                 int y = BlockPos.Mat[i].y;
 
                 // return false if one of the position is invalid
-                if (!IsCellPositionValid(Grid, Grid.GetCell(x, y), x, y))
+                if (!IsCellPositionValid(playField, playField.GetCell(x, y), x, y))
                     return false;
             }
 
@@ -195,8 +207,11 @@ namespace Tetris
             return true;
         }
 
-        public void Draw(SpriteBatch spriteBatch, Texture2D Block, CellsGrid Grid)
+        public void Draw(SpriteBatch spriteBatch, Texture2D Block, PlayField playField)
         {
+            if (!Visible)
+                return;
+
             TetrisMatrix BlockPos = GetMultipliedMatrix();
 
             for (int i = 0; i < NumBlockPerShapes; i++)
@@ -204,11 +219,11 @@ namespace Tetris
                 int x = BlockPos.Mat[i].x;
                 int y = BlockPos.Mat[i].y;
 
-                if (Grid.IsCellCoordValid(x, y))
+                if (playField.IsCellCoordValid(x, y))
                 {
-                    CellsGrid.CellData Cell = Grid.GetCell(x, y);
+                    PlayField.CellData Cell = playField.GetCell(x, y);
 
-                    int CellSize = Grid.GetCellSize();
+                    int CellSize = playField.GetCellSize();
                     Vec2 CellPos = new Vec2(Cell.CellPosition.x, Cell.CellPosition.y);
 
                     spriteBatch.Draw(Block, new Rectangle(CellPos.x, CellPos.y, CellSize, CellSize), ShapeColor);

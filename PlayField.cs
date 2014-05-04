@@ -13,11 +13,11 @@ using Tetris;
 
 namespace Tetris
 {
-    class CellsGrid
+    class PlayField
     {
-        const int CellSize = 32;
-        const int NumCellsOnXAxis = 10;
-        const int NumCellsOnYAxis = 15;
+        public const int CellSize = 32;
+        public const int NumCellsOnXAxis = 10;
+        public const int NumCellsOnYAxis = 15;
 
         public struct CellData
         {
@@ -30,7 +30,7 @@ namespace Tetris
 
         private CellData[,] Cells = new CellData[NumCellsOnYAxis, NumCellsOnXAxis];
 
-        public CellsGrid(int ScreenWidth, int ScreenHeight)
+        public PlayField(int ScreenWidth, int ScreenHeight)
         {
             CalculateGridSize(ScreenWidth, ScreenHeight);
             Reset();
@@ -83,19 +83,14 @@ namespace Tetris
 
         public void CreateDebugPattern()
         {
-            for (int y = 0; y < NumCellsOnYAxis; y++)
-            {
-                for (int x = 0; x < NumCellsOnXAxis; x++)
-                {
-                    Cells[y, x].CellColor = Color.Gray;
+            FillRow(NumCellsOnYAxis - 1, 0, 2);
+            FillRow(NumCellsOnYAxis - 1, 5, NumCellsOnXAxis - 1);
 
-                    bool IsFilled = y >= 10 && x < NumCellsOnXAxis - 1;
-                    Cells[y, x].IsCellFilled = IsFilled;
-                }
-            }
-            Cells[14, 3].IsCellFilled = false;
-            Cells[10, 2].IsCellFilled = false;
-            Cells[12, 4].IsCellFilled = false;
+            FillRow(NumCellsOnYAxis - 2, 0, 2);
+            FillRow(NumCellsOnYAxis - 2, 5, NumCellsOnXAxis - 1);
+
+            FillRow(NumCellsOnYAxis - 3, 0, 2);
+            FillRow(NumCellsOnYAxis - 3, 5, NumCellsOnXAxis - 1);
         }
 
         // Calculate the grid size
@@ -137,38 +132,94 @@ namespace Tetris
             //ClearLines(CurrentShape);
         }
 
-        public void ClearLines(BaseTetrisShape CurrentShape)
+        public bool IsRowFilled(int y)
         {
+            if (y < 0 || y >= NumCellsOnYAxis)
+                return false;
+
+            int NumFilled = 0;
+
+            for (int x = 0; x < NumCellsOnXAxis; x++)
+            {
+                if (Cells[y, x].IsCellFilled)
+                    NumFilled++;
+            }
+
+            return NumFilled == NumCellsOnXAxis;
+        }
+
+        public void FillRow(int y, int x1, int x2)
+        {
+            if (x1 < 0 || x1 >= NumCellsOnXAxis || x2 < 0 || x2 >= NumCellsOnXAxis || y < 0 || y >= NumCellsOnYAxis)
+                return;
+
+            for (int x = x1; x <= x2; x++)
+            {
+                Cells[y, x].IsCellFilled = true;
+            }
+        }
+
+        public void ClearRow(int y)
+        {
+            if (y < 0 || y >= NumCellsOnYAxis)
+                return;
+
+            for (int x = 0; x < NumCellsOnXAxis; x++)
+            {
+                Cells[y, x].IsCellFilled = false;
+                Cells[y, x].CellColor = Color.Black;
+            }
+        }
+
+        public void MoveRowDown(int y)
+        {
+            if (y < 0 || y >= NumCellsOnYAxis - 1)
+                return;
+
+            // Move the upper rows down
+            for (int x = 0; x < NumCellsOnXAxis; x++)
+            {
+                Cells[y + 1, x].CellColor = Cells[y, x].CellColor;
+                Cells[y + 1, x].IsCellFilled = Cells[y, x].IsCellFilled;
+            }
+        }
+
+        public void MoveRowsDown(int y)
+        {
+            // Move the upper rows down
+            while (y > 0)
+            {
+                MoveRowDown(y--);
+            }
+        }
+
+        public bool ClearLines(ref bool[] ClearedLines)
+        {
+            bool res = false;
             int y = NumCellsOnYAxis-1;
             while(y >= 0){
-                int NumFilled = 0;
 
-                for (int x = 0; x < NumCellsOnXAxis; x++) {
-                    if (Cells[y, x].IsCellFilled)
-                        NumFilled++;
-                }
+                bool IsFilled = IsRowFilled(y);
 
                 // if all cells of row y are filled
-                if (NumFilled == NumCellsOnXAxis) {
-
+                if (IsFilled)
+                {
                     // Clear them
-                    for (int x = 0; x < NumCellsOnXAxis; x++)
-                    {
-                        Cells[y, x].IsCellFilled = false;
-                    }
+                    ClearRow(y);
+
+                    ClearedLines[y] = true;
+
+                    res = true;
 
                     // Move the upper rows down
-                    for (int z = y; z > 0; z--)
-                    {
-                        for (int x = 0; x < NumCellsOnXAxis; x++)
-                        {
-                            Cells[z, x].IsCellFilled = Cells[z - 1, x].IsCellFilled;
-                        }
-                    }
-                } else {
+                    //MoveRowsDown(y);
+                }/* else {
                     y--;
-                }
+                }*/
+                y--;
             }
+
+            return res;
         }
 
         public void Draw(SpriteBatch spriteBatch, Texture2D Block)

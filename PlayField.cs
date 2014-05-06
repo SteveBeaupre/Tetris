@@ -15,9 +15,9 @@ namespace Tetris
 {
     class PlayField
     {
-        public const int CellSize = 32;
+        public const int CellSize = 20;
         public const int NumCellsOnXAxis = 10;
-        public const int NumCellsOnYAxis = 15;
+        public const int NumCellsOnYAxis = 20;
 
         public struct CellData
         {
@@ -115,8 +115,10 @@ namespace Tetris
             }
         }
 
-        public void AddShapeToCellsArray(BaseTetrisShape CurrentShape) // This goes in game manager
+        public bool AddShapeToCellsArray(BaseTetrisShape CurrentShape) // This goes in game manager
         {
+            bool res = true;
+
             for (int i = 0; i < 4; i++)
             {
                 Vec2 v = CurrentShape.GetBlockPosition(i);
@@ -128,9 +130,13 @@ namespace Tetris
                     Cells[y, x].IsCellFilled = true;
                     Cells[y, x].CellColor = CurrentShape.ShapeColor;
                 }
+                else 
+                {
+                    res = false;
+                }
             }
 
-            //ClearLines(CurrentShape);
+            return res;
         }
 
         public bool IsRowFilled(int y)

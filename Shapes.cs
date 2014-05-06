@@ -185,7 +185,7 @@ namespace Tetris
         {
             // Get the current blocks position matrix
             TetrisMatrix BlockPos = GetMultipliedMatrix();
-            
+
             int d = (int)Dir;
             BlockPos += TranslationMatrix.Mat[d];
 
@@ -204,6 +204,28 @@ namespace Tetris
             }
 
             // return true if we can move there
+            return true;
+        }
+
+        public bool CanSpawn(PlayField playField)
+        {
+            // Get the current blocks position matrix
+            TetrisMatrix BlockPos = GetMultipliedMatrix();
+
+            // For each block
+            for (int i = 0; i < NumBlockPerShapes; i++)
+            {
+                // Add the move direction vector
+
+                // Simplify...
+                int x = BlockPos.Mat[i].x;
+                int y = BlockPos.Mat[i].y;
+
+                // return false if the shape can't spawn here
+                if (!IsCellPositionValid(playField, playField.GetCell(x, y), x, y))
+                    return false;
+            }
+
             return true;
         }
 

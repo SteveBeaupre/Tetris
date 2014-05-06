@@ -56,14 +56,18 @@ namespace Tetris
                     else
                     {
                         // Reset the block falling speed
-                        gm.soundManager.Play(TetrisSoundsFX.StickSound);
+                        gm.soundManager.Play(TetrisSoundsFX.LockSound);
 
                         // We can't move it down further, so add it to the static array 
-                        gm.playField.AddShapeToCellsArray(gm.CurrentShape);
+                        if (!gm.playField.AddShapeToCellsArray(gm.CurrentShape)) 
+                        {
+                            gm.SetGameState(GameStates.GameOver);
+                            return;
+                        }
+
                         gm.CurrentShape.Hide();
 
                         // Clear the lines
-
                         if (gm.playField.ClearLines(ref LinesCleared))
                         {
                             // We have some lines to clear...
@@ -99,7 +103,7 @@ namespace Tetris
                     }
                     else
                     {
-                        gm.soundManager.Play(TetrisSoundsFX.StickSound);
+                        gm.soundManager.Play(TetrisSoundsFX.LockSound);
                     }
                 }
             }

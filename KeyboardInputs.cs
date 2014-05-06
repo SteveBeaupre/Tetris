@@ -24,8 +24,9 @@ namespace Tetris
 
     class KeyboardInputs : IKeyboardInputs
     {
-        private const int InitialDelay = 500;
-        private const int SmallDelays = 150;
+        private const int InitialDelay = 250;
+        private const int SmallDelays = 100;
+        private const int DropDelay = 25;
 
         private TimeSpan[] LastTimeKeyWasPressed;
         private TimeSpan[] RepetitionDelay;
@@ -96,8 +97,7 @@ namespace Tetris
 
             if (k == InputKey.FallKey)
             {
-                int delay = 50;
-                gm.gravity.SetGravitySpeed(TimeSpan.FromMilliseconds(delay));
+                gm.gravity.SetGravitySpeed(TimeSpan.FromMilliseconds(DropDelay));
                 gm.gravity.GravityTimer = TimeSpan.Zero;
             }
 
@@ -148,7 +148,7 @@ namespace Tetris
 
                     if (gm.CurrentShape.Rotate(gm.playField, k == InputKey.RotateClockwise ? RotateDirection.Clockwise : RotateDirection.CounterClockwise))
                     {
-                        gm.soundManager.Play(TetrisSoundsFX.MoveSound);
+                        gm.soundManager.Play(TetrisSoundsFX.RotateSound);
                     }
                 }
             }
@@ -191,11 +191,11 @@ namespace Tetris
         {
             switch (k)
             {
-                case Keys.Up: return InputKey.DebugMoveUpKey;
-                case Keys.Down: return InputKey.DebugMoveDownKey;
+                //case Keys.Up: return InputKey.DebugMoveUpKey;
+                //case Keys.Down: return InputKey.DebugMoveDownKey;
                 case Keys.Left: return InputKey.LeftKey;
                 case Keys.Right: return InputKey.RightKey;
-                case Keys.Space: return InputKey.FallKey;
+                case Keys.Down: return InputKey.FallKey;
                 case Keys.NumPad1: return InputKey.RotateCounterClockwise;
                 case Keys.NumPad3: return InputKey.RotateClockwise;
                 case Keys.P: return InputKey.PauseKey;

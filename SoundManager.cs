@@ -12,22 +12,23 @@ using Microsoft.Xna.Framework.GamerServices;
 
 namespace Tetris
 {
-    enum TetrisSoundsFX { MoveSound, StickSound/*, PauseSound*/ }
+    enum TetrisSoundsFX { MoveSound, RotateSound, LockSound }
 
     class SoundManager
     {
         private SoundEffect[] Effects;
 
         public SoundManager()
-        { 
-            int NumItems =  TetrisSoundsFX.GetNames(typeof(Shapes)).Length;
+        {
+            int NumItems = TetrisSoundsFX.GetNames(typeof(TetrisSoundsFX)).Length;
             Effects = new SoundEffect[NumItems];
         }
 
         public void Load(ContentManager cm)
         {
-            Effects[(int)TetrisSoundsFX.MoveSound] = cm.Load<SoundEffect>("Blip");
-            Effects[(int)TetrisSoundsFX.StickSound] = cm.Load<SoundEffect>("Stick");
+            Effects[(int)TetrisSoundsFX.MoveSound] = cm.Load<SoundEffect>("Move");
+            Effects[(int)TetrisSoundsFX.RotateSound] = cm.Load<SoundEffect>("Rotate");
+            Effects[(int)TetrisSoundsFX.LockSound] = cm.Load<SoundEffect>("Lock");
         }
 
         public void Play(TetrisSoundsFX SndFX)

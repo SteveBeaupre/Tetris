@@ -59,7 +59,7 @@ namespace Tetris
         public void Reset()
         {
             playField.Reset();
-            playField.CreateDebugPattern();
+            //playField.CreateDebugPattern();
             gravity.Reset();
             SpawnRandomShape((int)Shapes.L);
             //GameGravity.Enabled = false;
@@ -94,6 +94,11 @@ namespace Tetris
             }
             
             CurrentShape.Show();
+
+            // Game Over Test
+            if (!CurrentShape.CanSpawn(playField)) {
+                SetGameState(GameStates.GameOver);
+            }
         }
 
         public void Update(GameTime gameTime)
@@ -112,7 +117,6 @@ namespace Tetris
             CurrentShape.Draw(spriteBatch, Block, playField);
 
             spriteBatch.End();
-
         }
     }
 }
